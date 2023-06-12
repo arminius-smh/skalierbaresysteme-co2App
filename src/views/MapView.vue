@@ -1,4 +1,8 @@
 <template>
+  <MapOverlay
+    :regionClickIntensity="regionClickIntensity"
+    :regionClickName="regionClickName"
+  />
   <div id="map"></div>
 </template>
 
@@ -6,12 +10,19 @@
 import "leaflet/dist/leaflet.css";
 import L from "leaflet/dist/leaflet.js";
 import ukdata from "../assets/ukdata.json";
+import MapOverlay from "../components/MapOverlay.vue";
+//import dataCenterPng from "../assets/data-center-icon.png"
 
 export default {
   name: "MapView",
+  components: {
+    MapOverlay,
+  },
   data() {
     return {
       intensity: [],
+      regionClickIntensity: -1,
+      regionClickName: "",
     };
   },
   mounted() {
@@ -82,17 +93,17 @@ export default {
         geojson.resetStyle(e.target);
       }
 
-      function openPopup(e) {
-        var regionnum = e.target.feature.properties.regionid;
-        var region = tmpthis.idToRegion(regionnum);
-        e.target.bindPopup(`Region: ${region}`).openPopup();
+      function click(e) {
+        var regionId = e.target.feature.properties.regionid;
+        tmpthis.regionClickIntensity = tmpthis.intensity[regionId - 1];
+        tmpthis.regionClickName = tmpthis.idToRegion(regionId);
       }
 
       function onEachFeature(feature, layer) {
         layer.on({
           mouseover: highlightFeature,
           mouseout: resetHighlight,
-          click: openPopup,
+          click: click,
         });
       }
       var tmpthis = this;
@@ -109,6 +120,14 @@ export default {
         style: style,
         onEachFeature: onEachFeature,
       }).addTo(map);
+
+      // Icon Example
+      // var dataCenterIcon = L.icon({
+      //     iconUrl: dataCenterPng,
+      //     iconSize: [32, 32],
+      //     iconAnchor: [16,32 ]
+      //   });
+      // L.marker([54, -3], { icon: dataCenterIcon }).addTo(map);
     },
     idToRegion(i) {
       return i == 1
