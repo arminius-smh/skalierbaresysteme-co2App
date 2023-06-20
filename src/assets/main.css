@@ -12,11 +12,10 @@ body {
 
 #overlay {
     position: absolute;
-    top: 0;
     right: 0;
+    top: 15px;
     z-index: 1000;
     margin-right: 15px;
-    margin-top: 75px;
     padding: 8px 20px;
     font: 14px/16px Arial, Helvetica, sans-serif;
     background: white;
@@ -27,13 +26,13 @@ body {
 }
 
 #overlay h4 {
-    margin: 0 0 5px;
-    color: #777;
+  margin: 0 0 5px;
+  color: #777;
 }
 
 #create-button {
   padding: 10px 20px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 4px;
@@ -61,7 +60,7 @@ body {
 
 #update-button {
   padding: 10px 20px;
-  background-color: #2196F3;
+  background-color: #2196f3;
   color: white;
   border: none;
   border-radius: 4px;
@@ -70,5 +69,25 @@ body {
 }
 
 #update-button:active {
-  background-color: #1976D2;
+  background-color: #1976d2;
+}
+
+.popup-container {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 250px;
+  height: auto;
+  background: white;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  padding: 10px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.popup-open {
+  opacity: 1;
 }
