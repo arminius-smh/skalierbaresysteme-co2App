@@ -1,4 +1,5 @@
 <template>
+  <Header></Header>
   <MapOverlay
     :regionClickIntensity="regionClickIntensity"
     :regionClickName="regionClickName"
@@ -11,12 +12,15 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet/dist/leaflet.js";
 import ukdata from "../assets/ukdata.json";
 import MapOverlay from "../components/MapOverlay.vue";
+import Header from "../components/Header.vue"
+
 //import dataCenterPng from "../assets/data-center-icon.png"
 
 export default {
   name: "MapView",
   components: {
     MapOverlay,
+    Header
   },
   data() {
     return {
