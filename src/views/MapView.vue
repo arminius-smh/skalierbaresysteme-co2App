@@ -1,8 +1,10 @@
 <template>
-    <Header></Header>
     <MapOverlay :regionClickIntensity="regionClickIntensity" :regionClickName="regionClickName"
         :regionClickId="regionClickId" :datacenter="datacenter" @createDataCenter="createDataCenter"
         @updateDataCenter="updateDataCenter" @removeDataCenter="removeDataCenter" />
+    <div v-if="userStore.getUser != null">
+        <ProfileOverlay @createProfile="createProfile" @updateProfile="updateProfile" @removeProfile="removeProfile" />
+    </div>
     <div id="map"></div>
 </template>
 
@@ -11,16 +13,25 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet/dist/leaflet.js";
 import $ from "jquery";
 import ResizeSensor from "css-element-queries/src/ResizeSensor";
+import axios from "axios";
 import ukdata from "../assets/ukdata.json";
 import MapOverlay from "../components/MapOverlay.vue";
-import Header from "../components/Header.vue";
+import ProfileOverlay from "../components/ProfileOverlay.vue";
 import dataCenterPng from "../assets/data-center-icon.png";
+import { useUserStore } from "../stores/userStore.js";
+import { useChosenProfileStore } from "../stores/chosenProfile.js";
+import config from '../../config.mjs';
 
 export default {
     name: "MapView",
     components: {
         MapOverlay,
-        Header,
+        ProfileOverlay,
+    },
+    setup() {
+        const userStore = useUserStore();
+        const chosenProfileStore = useChosenProfileStore();
+        return { userStore, chosenProfileStore };
     },
     data() {
         return {
@@ -41,7 +52,45 @@ export default {
                 console.log(error);
             });
 
-        this.resizeMap()
+        this.resizeMap();
+    },
+    watch: {
+        "userStore.getUser": function () {
+            if (this.userStore.getUser === null) {
+                for (const singleDatacenter of this.datacenter) {
+                    this.map.removeLayer(singleDatacenter.marker);
+                }
+                this.datacenter = [];
+            }
+            this.resizeMap();
+        },
+        "chosenProfileStore.getId": function () {
+            for (const singleDatacenter of this.datacenter) {
+                try {
+                    this.map.removeLayer(singleDatacenter.marker);
+                } catch { }
+            }
+            this.datacenter = this.chosenProfileStore.getDataCenters;
+            if (this.chosenProfileStore.getId != "0") {
+                for (const singleDatacenter of this.datacenter) {
+                    try {
+                        singleDatacenter.marker.addTo(this.map);
+                    } catch {
+                        var dataCenterIcon = L.icon({
+                            iconUrl: dataCenterPng,
+                            iconSize: [32, 32],
+                            iconAnchor: [16, 32],
+                        });
+                        var lat = singleDatacenter.lat;
+                        var lng = singleDatacenter.lng;
+                        var marker = L.marker([lat, lng], {
+                            icon: dataCenterIcon,
+                        }).addTo(this.map);
+                        singleDatacenter.marker = marker;
+                    }
+                }
+            }
+        },
     },
     methods: {
         async getIntensityData() {
@@ -149,6 +198,8 @@ export default {
             var singleDataCenter = {
                 regionId: regionId,
                 marker: marker,
+                lat: lat,
+                lng: lng,
                 computerNum: dataCenterConfig.computerNum,
             };
             this.datacenter.push(singleDataCenter);
@@ -168,6 +219,89 @@ export default {
                 (obj) => obj.regionId === parseInt(regionId)
             );
             singleDataCenter.computerNum = dataCenterConfig.computerNum;
+        },
+        createProfile(profileName) {
+            for (const singleDatacenter of this.datacenter) {
+                this.map.removeLayer(singleDatacenter.marker);
+            }
+            var user = this.userStore.getUser;
+            var profile = {
+                name: profileName,
+                id: user.profiles.length,
+                datacenter: this.datacenter,
+            };
+            user.profiles.push(profile);
+            this.userStore.setUser(user);
+            axios
+                .put(
+                    `${config.serverURL}:${config.port}/users/${this.userStore.getUser._id}/profiles`,
+                    {
+                        profiles: this.userStore.getUser.profiles,
+                    }
+                )
+            this.datacenter = [];
+        },
+        updateProfile(profileName) {
+            var currentProfileId = this.chosenProfileStore.getId;
+            var user = this.userStore.getUser;
+            var newProfiles = [];
+            for (const profile of user.profiles) {
+                var newDatacenters = [];
+                for (const datacenter of profile.datacenter) {
+                    newDatacenters.push({
+                        regionId: datacenter.regionId,
+                        computerNum: datacenter.computerNum,
+                        lat: datacenter.lat,
+                        lng: datacenter.lng,
+                    });
+                }
+                if (profile.id === currentProfileId) {
+                    newProfiles.push({
+                        name: profileName,
+                        id: profile.id,
+                        datacenter: newDatacenters,
+                    });
+                } else {
+                    newProfiles.push({
+                        name: profile.name,
+                        id: profile.id,
+                        datacenter: newDatacenters,
+                    });
+                }
+            }
+            user.profiles = newProfiles;
+            this.userStore.setUser(user);
+            this.chosenProfileStore.setName(profileName);
+            this.chosenProfileStore.setDataCenter(this.datacenter);
+            this.chosenProfileStore.setId(currentProfileId);
+            axios
+                .put(
+                    `${config.serverURL}:${config.port}/users/${this.userStore.getUser._id}/profiles`,
+                    {
+                        profiles: newProfiles,
+                    }
+                )
+        },
+        removeProfile() {
+            var user = this.userStore.getUser;
+            user.profiles = user.profiles.filter(
+                (obj) => obj.id !== this.chosenProfileStore.getId
+            );
+            this.chosenProfileStore.setId(0);
+            this.chosenProfileStore.setName("New Template");
+            this.chosenProfileStore.setDataCenter([]);
+            for (const singleDatacenter of this.datacenter) {
+                this.map.removeLayer(singleDatacenter.marker);
+            }
+            this.datacenter = [];
+            this.userStore.setUser(user);
+            axios
+                .put(
+                    `${config.serverURL}:${config.port}/users/${this.userStore.getUser._id}/profiles`,
+                    {
+                        profiles: this.userStore.getUser.profiles,
+                    }
+                )
         },
         regionIdConverter(input) {
             const regionMap = {
@@ -197,16 +331,26 @@ export default {
             }
         },
         resizeMap() {
-        // Resize the map container to fit the window when the header size changes
-        function resizeMapContainer() {
-            var navbarHeight = $(".navbar").outerHeight();
-            var overlayOffset = navbarHeight + 15;
-            $("#map").height(window.innerHeight - navbarHeight);
-            $("#overlay").css("top", overlayOffset + "px");
-        }
-        new ResizeSensor($(".navbar"), function () {
-            resizeMapContainer();
-        });
+            // Resize the map container to fit the window when the header size changes
+            function resizeMapContainer() {
+                var navbarHeight = $(".navbar").outerHeight();
+                var mapOverlayOffset = navbarHeight + 15;
+                $("#map").height(window.innerHeight - navbarHeight);
+                $("#map-overlay").css("top", mapOverlayOffset + "px");
+                resizeProfileOverlay();
+            }
+            function resizeProfileOverlay() {
+                var navbarHeight = $(".navbar").outerHeight();
+                var mapOverlayHeight = parseInt($("#map-overlay").css("height"));
+                var profileOverlayOffset = navbarHeight + mapOverlayHeight + 30;
+                $("#profile-overlay").css("top", profileOverlayOffset + "px");
+            }
+            new ResizeSensor($(".navbar"), function () {
+                resizeMapContainer();
+            });
+            new ResizeSensor($("#map-overlay"), function () {
+                resizeProfileOverlay();
+            });
         },
         regionIdToCenterCoordinate(regionId) {
             const regionMap = {

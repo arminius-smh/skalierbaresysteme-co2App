@@ -1,5 +1,5 @@
 <template>
-    <div id="overlay">
+    <div id="map-overlay">
         <div v-if="regionClickName === ''">
             <h4>Please click on a region</h4>
         </div>
