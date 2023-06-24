@@ -1,0 +1,10 @@
+version: "3"
+
+services:
+  co2app:
+    image: co2appuk/app:latest
+    container_name: co2app
+    ports:
+      - 80:80
+    network_mode: host
+    restart: unless-stopped

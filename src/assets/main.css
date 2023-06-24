@@ -10,7 +10,8 @@ body {
   width: 100%;
 }
 
-#overlay {
+#profile-overlay,
+#map-overlay {
     position: absolute;
     right: 0;
     top: 15px;
@@ -25,7 +26,8 @@ body {
     text-align: center;
 }
 
-#overlay h4 {
+#profile-overlay h4,
+#map-overlay h4 {
   margin: 0 0 5px;
   color: #777;
 }
