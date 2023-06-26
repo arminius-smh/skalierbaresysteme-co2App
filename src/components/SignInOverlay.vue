@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="SignInOverlay">
     <div class="overlay">
       <div class="overlay-content">
         <button
@@ -187,7 +187,7 @@ export default {
 
 .overlay-content-signin {
   top: 50px;
-  left: 75px;
+  left: 3vw;
 }
 
 .app-name {
