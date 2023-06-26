@@ -10,6 +10,11 @@ body {
   width: 100%;
 }
 
+#SignInOverlay {
+    position: relative;
+    z-index: 2000;
+}
+
 #profile-overlay,
 #map-overlay {
     position: absolute;

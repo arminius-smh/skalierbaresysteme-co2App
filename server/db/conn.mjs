@@ -1,8 +1,7 @@
 import { MongoClient } from "mongodb";
+import config from "../../config.mjs";
 
-const connectionString = `mongodb://127.0.0.1:27017`;
-
-const client = new MongoClient(connectionString);
+const client = new MongoClient(config.dbURL);
 
 let conn;
 try {
