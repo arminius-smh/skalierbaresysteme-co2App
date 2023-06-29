@@ -15,6 +15,13 @@
       @removeProfile="removeProfile"
     />
   </div>
+  <div v-if="this.datacenter.size>0">
+    <miniStatsOverlay
+    :datacenter="datacenter"
+    :intensity="intensity"
+    />
+
+  </div>
   <div id="map"></div>
 </template>
 
