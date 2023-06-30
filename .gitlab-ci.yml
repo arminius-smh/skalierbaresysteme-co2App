@@ -28,7 +28,7 @@ deploy:
   script:
     - ssh -o StrictHostKeyChecking=no -i $SSH_KEY main@co2appuk.duckdns.org "       
         docker login -u $REGISTRY_USER -p $REGISTRY_PASS &&
-        docker ps -aqf 'ancestor=$IMAGE_NAME:$IMAGE_TAG' | xargs docker stop | xargs docker rm || true &&
+        docker ps -aqf ancestor=$IMAGE_NAME:$IMAGE_TAG | xargs docker stop | xargs docker rm || true &&
         docker image rm $IMAGE_NAME:$IMAGE_TAG || true &&
         docker run -d -v /etc/letsencrypt/live/co2appuk.duckdns.org/privkey.pem:/app/privkey.pem -v /etc/letsencrypt/live/co2appuk.duckdns.org/fullchain.pem:/app/fullchain.pem --restart unless-stopped --network host $IMAGE_NAME:$IMAGE_TAG
       "
