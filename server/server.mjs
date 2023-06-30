@@ -5,6 +5,9 @@ import bodyParser from "body-parser";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import config from "../config.mjs";
+import https from "https";
+import http from "http";
+import fs from "mz/fs.js";
 
 const app = express();
 
@@ -23,11 +26,26 @@ app.use("/co2data", co2data);
 // Serve the static files from the dist directory
 app.use(express.static(join(__dirname, "..", "dist")));
 
-// Catch-all route to serve the index.html file
+// route to serve the index.html file
 app.get("/", (req, res) => {
   res.sendFile(join(__dirname, "..", "dist", "index.html"));
 });
-// start the Express server
-app.listen(config.port, () => {
-  console.log(`Server is running on port: ${config.port}`);
-});
+
+// start the server on https is configured, fall back to http
+if (config.useHttps) {
+  const { key, cert } = await (async () => {
+    return {
+      key: await fs.readFile(`/app/privkey.pem`),
+      cert: await fs.readFile(`/app/fullchain.pem`),
+    };
+  })();
+  const httpsServer = https
+    .createServer({ key, cert }, app)
+    .listen(config.port, () => {
+      console.log(`HTTPS server is running on port: ${config.port}`);
+    });
+} else {
+  const httpServer = http.createServer(app).listen(config.port, () => {
+    console.log(`HTTP server is running on port: ${config.port}`);
+  });
+}
