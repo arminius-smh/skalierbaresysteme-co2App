@@ -14,7 +14,7 @@
           <li v-for="datacenter in profile.datacenter" :key="datacenter.regionid" class="region-item">
             <p class="region-info">
               <!-- die region.id wird nicht korrekt zurückgegeben bzw ist wahrscheinlich nicht richtig gespeichert -->
-              {{ regionIdConverter(datacenter.regionid) }}: {{ datacenter.computerNum }} Computers
+              {{ regionIdConverter(datacenter.regionId) }}: {{ datacenter.computerNum }} Computers
               <!-- {{ datacenter.regionid }}: {{ datacenter.computerNum }} Computers -->
             </p>
           </li>
@@ -105,7 +105,7 @@ export default {
       };
       let sum = 0;
       for (const datacenter of profile.datacenter) {
-        const regionId = parseInt(datacenter.regionid);
+        const regionId = parseInt(datacenter.regionId);
         sum += parseInt(datacenter.computerNum * Values[regionId]);
       }
       return sum;
@@ -113,24 +113,24 @@ export default {
     calculateForecastValue1(profile) {
       //dummy data
       const Values = { 
-        1: 10,
-        2: 45,
+        1: 20,
+        2: 35,
         3: 22,
-        4: 40,
-        5: 49,
-        6: 53,
-        7: 44,
-        8: 30,
-        9: 30,
-        10: 35,
-        11: 12,
-        12: 15,
-        13: 32,
-        14: 41,
+        4: 20,
+        5: 19,
+        6: 43,
+        7: 34,
+        8: 10,
+        9: 50,
+        10: 25,
+        11: 22,
+        12: 45,
+        13: 22,
+        14: 21,
       };
       let sum = 0;
       for (const datacenter of profile.datacenter) {
-        const regionId = parseInt(datacenter.regionid);
+        const regionId = parseInt(datacenter.regionId);
         sum += parseInt(datacenter.computerNum * Values[regionId]);
       }
       return sum;
@@ -138,24 +138,24 @@ export default {
     calculateForecastValue2(profile) {
       // dummy data
       const Values = { 
-        1: 10,
-        2: 45,
-        3: 22,
-        4: 40,
-        5: 49,
-        6: 53,
-        7: 44,
-        8: 30,
-        9: 30,
-        10: 35,
-        11: 12,
-        12: 15,
-        13: 32,
-        14: 41,
+        1: 20,
+        2: 5,
+        3: 8,
+        4: 50,
+        5: 29,
+        6: 13,
+        7: 34,
+        8: 60,
+        9: 10,
+        10: 15,
+        11: 42,
+        12: 35,
+        13: 12,
+        14: 21,
       };
       let sum = 0;
       for (const datacenter of profile.datacenter) {
-        const regionId = parseInt(datacenter.regionid);
+        const regionId = parseInt(datacenter.regionId);
         sum += parseInt(datacenter.computerNum * Values[regionId]);
       }
       return sum;
@@ -165,13 +165,17 @@ export default {
       this.graph = new Chart(graphCanvas, {
         type: "line",
         data: {
-          labels: ["Today", "1 Week Forecast", "2 Week Forecast"],
+          labels: ["Today", "24h Forecast", "48h Forecast"],
           datasets: [],
         },
         options: {
           scales: {
             y: {
               beginAtZero: true,
+              title: {
+                display: true,
+                text: 'kg CO2 / kWh',
+              },
             },
           },
         },
@@ -179,24 +183,11 @@ export default {
     },
     updateGraph(actual, forecast1, forecast2) {
       this.graph.data.datasets = [
-        // TODO labels entfernen
         {
-          label: "Actual",
-          data: [actual, 0, 0],
+          label: "kg CO2 / kWh", //label maybe not needed
+          data: [actual, forecast1, forecast2],
           borderColor: "rgb(255, 99, 132)",
           backgroundColor: "rgba(255, 99, 132, 0.5)",
-        },
-        {
-          label: "Forecast 1",
-          data: [0, forecast1, 0],
-          borderColor: "rgb(54, 162, 235)",
-          backgroundColor: "rgba(54, 162, 235, 0.5)",
-        },
-        {
-          label: "Forecast 2",
-          data: [0, 0, forecast2],
-          borderColor: "rgb(75, 192, 192)",
-          backgroundColor: "rgba(75, 192, 192, 0.5)",
         },
       ];
       this.graph.update();
@@ -230,12 +221,11 @@ export default {
 }
 
 .profiles-column {
-  width: 20%;
+  width: 25%;
   height: 100%; 
   background-color: #f0f0f0;
   padding: 20px;
   border-left: none;
-  align-items: left;
 }
 
 .profile-card {
@@ -261,13 +251,17 @@ ul {
 
 .graph-container {
   /* TODO layout verbessern */
-  width: 80%;
+  width: 100%;
+  /* padding: 10%; */
   /* height: 100%; */
-  /* flex: 1; */
-  /* justify-content: flex-end;
-  align-items: right; */
+  display: flex;
+  /* justify-content: center; */
+  align-items: center;
 }
 .container {
   display: flex;
+  margin-left: 0px;
+  margin-right: 0px;
+  padding: 0px;
 }
 </style>
