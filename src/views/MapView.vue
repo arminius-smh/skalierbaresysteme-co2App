@@ -15,13 +15,13 @@
       @removeProfile="removeProfile"
     />
   </div>
-  <div v-if="this.datacenter.size>0">
+
     <miniStatsOverlay
-    :datacenter="datacenter"
-    :intensity="intensity"
+    :datacenters="datacenter"
+    :intensity="intensity" 
     />
 
-  </div>
+
   <div id="map"></div>
 </template>
 
@@ -33,6 +33,7 @@ import ResizeSensor from "css-element-queries/src/ResizeSensor";
 import axios from "axios";
 import ukdata from "../assets/ukdata.json";
 import MapOverlay from "../components/MapOverlay.vue";
+import miniStatsOverlay from "../components/ministatsOverlay.vue";
 import ProfileOverlay from "../components/ProfileOverlay.vue";
 import dataCenterPng from "../assets/data-center-icon.png";
 import { useUserStore } from "../stores/userStore.js";
@@ -42,6 +43,7 @@ import config from "../../config.mjs";
 export default {
   name: "MapView",
   components: {
+    miniStatsOverlay,
     MapOverlay,
     ProfileOverlay,
   },
@@ -224,8 +226,10 @@ export default {
         lat: lat,
         lng: lng,
         computerNum: dataCenterConfig.computerNum,
+
       };
       this.datacenter.push(singleDataCenter);
+      this.$emit("update:datacenter", this.datacenter);
     },
     removeDataCenter(regionId) {
       regionId = parseInt(regionId);
@@ -236,12 +240,14 @@ export default {
         (obj) => obj.regionId !== regionId
       );
       this.map.removeLayer(singleDataCenter.marker);
+      this.$emit("update:datacenter", this.datacenter);
     },
     updateDataCenter(regionId, dataCenterConfig) {
       var singleDataCenter = this.datacenter.find(
         (obj) => obj.regionId === parseInt(regionId)
       );
       singleDataCenter.computerNum = dataCenterConfig.computerNum;
+      this.$emit("update:datacenter", this.datacenter);
     },
     createProfile(profileName) {
       for (const singleDatacenter of this.datacenter) {
@@ -262,6 +268,7 @@ export default {
         }
       );
       this.datacenter = [];
+      this.$emit("update:datacenter", this.datacenter);
     },
     updateProfile(profileName) {
       var currentProfileId = this.chosenProfileStore.getId;
