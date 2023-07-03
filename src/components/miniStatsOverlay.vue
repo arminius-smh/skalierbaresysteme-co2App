@@ -6,7 +6,7 @@
           :key="datacenter.regionId">
           {{ regionIdConverter(datacenter.regionId) }} 
 
-          <div class="bar" 
+          <div class="bar rounded-pill" 
           :style="{ width: datacenter.computerNum * 8 + 'px', backgroundColor: getColor(intensity[datacenter.regionId - 1])}" >
          {{ datacenter.computerNum }}
 
@@ -82,7 +82,7 @@
   <style scoped>
   .mini-stats-overlay {
     position: absolute;
-    top: 50%;
+    top: 45%;
     left: 20px;
     transform: translate(0, -50%);
     z-index: 9999;

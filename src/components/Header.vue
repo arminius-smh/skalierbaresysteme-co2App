@@ -1,26 +1,19 @@
 <template>
-  <div v-if="!isLoggedIn()">
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    
+    <nav v-if="!isLoggedIn()" class="navbar navbar-expand-lg navbar-light bg-light ">
       <div class="container-fluid">
-        <a class="navbar-brand" href="#">CO<sub>2</sub> App</a>
-        <div class="navbar-collapse">
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <button
-                class="nav-link active"
-                aria-current="page"
-                @click="this.showSignInOverlay = true"
-              >
-                Sign-in
-              </button>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+      <form class="form-inline">
+    <a class="navbar-brand" href="#">CO<sub>2</sub> App</a>
+    <button class="btn btn-outline-success" type="button"
+            aria-current="page"
+            @click="this.showSignInOverlay = true" >Log In</button>
+
+    </form>  
   </div>
-  <div v-else>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    </nav>
+    
+
+    <nav v-else class="navbar navbar-expand-lg">
       <div class="container-fluid">
         <a class="navbar-brand" href="#">CO<sub>2</sub> App</a>
         <div class="navbar-brand">
@@ -40,8 +33,8 @@
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
           <ul class="navbar-nav">
             <li class="nav-item">
-              <button
-                class="nav-link active"
+              <button type="button"
+                class="btn btn-outline-danger"
                 aria-current="page"
                 @click="logout()"
               >
@@ -76,7 +69,6 @@
         </div>
       </div>
     </nav>
-  </div>
 
   <div v-if="this.showSignInOverlay">
     <SignInOverlay @closeSignIn="closeSignIn" @LoggedIn="LoggedIn" />
