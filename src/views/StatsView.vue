@@ -15,6 +15,7 @@
             <p class="region-info">
               <!-- die region.id wird nicht korrekt zurückgegeben bzw ist wahrscheinlich nicht richtig gespeichert -->
               {{ regionIdConverter(datacenter.regionid) }}: {{ datacenter.computerNum }} Computers
+              <!-- {{ datacenter.regionid }}: {{ datacenter.computerNum }} Computers -->
             </p>
           </li>
         </ul>
@@ -59,7 +60,16 @@ export default {
         13: "London",
         14: "South East England",
       };
-      return regionMap[input] || "Region unknown";
+      // return regionMap[parseInt(input)] || "Region unknown";
+      if (!isNaN(parseInt(input))) {
+        return regionMap[parseInt(input)] || "Something went wrong1!";
+      } else {
+        const invertedMap = {};
+        for (const [key, value] of Object.entries(regionMap)) {
+          invertedMap[value] = parseInt(key);
+        }
+        return invertedMap[input] || "Something went wrong2!";
+     }
     },
     getProfileTotalComputers(profile) {
       let totalComputers = 0;
@@ -95,7 +105,7 @@ export default {
       };
       let sum = 0;
       for (const datacenter of profile.datacenter) {
-        const regionId = datacenter.regionid;
+        const regionId = parseInt(datacenter.regionid);
         sum += parseInt(datacenter.computerNum * Values[regionId]);
       }
       return sum;
@@ -120,7 +130,7 @@ export default {
       };
       let sum = 0;
       for (const datacenter of profile.datacenter) {
-        const regionId = datacenter.regionid;
+        const regionId = parseInt(datacenter.regionid);
         sum += parseInt(datacenter.computerNum * Values[regionId]);
       }
       return sum;
@@ -145,7 +155,7 @@ export default {
       };
       let sum = 0;
       for (const datacenter of profile.datacenter) {
-        const regionId = datacenter.regionid;
+        const regionId = parseInt(datacenter.regionid);
         sum += parseInt(datacenter.computerNum * Values[regionId]);
       }
       return sum;
