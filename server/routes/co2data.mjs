@@ -16,7 +16,7 @@ async function fetchData() {
   } catch (error) {
     console.error('Error fetching data:', error);
   }
-  co2data = tempco2data;
+  co2data = [ ...tempco2data]; // copy tempco2data to co2data, so that co2data is never empty or partially filled
 }
 
 await fetchData(); //initial fetch
