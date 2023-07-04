@@ -1,4 +1,5 @@
 <template>
+  <div class="container-fluid">
   <MapOverlay
     :regionClickIntensity="regionClickIntensity"
     :regionClickName="regionClickName"
@@ -8,14 +9,21 @@
     @updateDataCenter="updateDataCenter"
     @removeDataCenter="removeDataCenter"
   />
-  <div v-if="userStore.getUser != null">
-    <ProfileOverlay
+
+    <ProfileOverlay v-if="userStore.getUser != null"
       @createProfile="createProfile"
       @updateProfile="updateProfile"
       @removeProfile="removeProfile"
     />
+
+    <miniStatsOverlay
+    :datacenters="datacenter"
+    :intensity="intensity" 
+    />
+
   </div>
   <div id="map"></div>
+
 </template>
 
 <script>
@@ -26,6 +34,7 @@ import ResizeSensor from "css-element-queries/src/ResizeSensor";
 import axios from "axios";
 import ukdata from "../assets/ukdata.json";
 import MapOverlay from "../components/MapOverlay.vue";
+import miniStatsOverlay from "../components/miniStatsOverlay.vue";
 import ProfileOverlay from "../components/ProfileOverlay.vue";
 import dataCenterPng from "../assets/data-center-icon.png";
 import { useUserStore } from "../stores/userStore.js";
@@ -35,6 +44,7 @@ import config from "../../config.mjs";
 export default {
   name: "MapView",
   components: {
+    miniStatsOverlay,
     MapOverlay,
     ProfileOverlay,
   },
@@ -217,8 +227,10 @@ export default {
         lat: lat,
         lng: lng,
         computerNum: dataCenterConfig.computerNum,
+
       };
       this.datacenter.push(singleDataCenter);
+      this.$emit("update:datacenter", this.datacenter);
     },
     removeDataCenter(regionId) {
       regionId = parseInt(regionId);
@@ -229,12 +241,14 @@ export default {
         (obj) => obj.regionId !== regionId
       );
       this.map.removeLayer(singleDataCenter.marker);
+      this.$emit("update:datacenter", this.datacenter);
     },
     updateDataCenter(regionId, dataCenterConfig) {
       var singleDataCenter = this.datacenter.find(
         (obj) => obj.regionId === parseInt(regionId)
       );
       singleDataCenter.computerNum = dataCenterConfig.computerNum;
+      this.$emit("update:datacenter", this.datacenter);
     },
     createProfile(profileName) {
       for (const singleDatacenter of this.datacenter) {
@@ -255,6 +269,7 @@ export default {
         }
       );
       this.datacenter = [];
+      this.$emit("update:datacenter", this.datacenter);
     },
     updateProfile(profileName) {
       var currentProfileId = this.chosenProfileStore.getId;
