@@ -49,6 +49,7 @@ export default {
     ProfileOverlay,
   },
   setup() {
+    // load global variables
     const userStore = useUserStore();
     const chosenProfileStore = useChosenProfileStore();
     return { userStore, chosenProfileStore };
@@ -64,10 +65,11 @@ export default {
     };
   },
   mounted() {
+    // only load map after data is fetched
     this.getIntensityData()
       .then(() => {
         this.initalizeMap();
-        this.resizeMap();
+        this.resizeMap(); //resize map dynamically
       })
       .catch((error) => {
         console.log(error);
@@ -75,6 +77,7 @@ export default {
   },
   watch: {
     "userStore.getUser": function () {
+      // if user logs out, remove all datacenters
       if (this.userStore.getUser === null) {
         for (const singleDatacenter of this.datacenter) {
           this.map.removeLayer(singleDatacenter.marker);
@@ -83,6 +86,7 @@ export default {
       }
       this.resizeMap();
     },
+    // remove mapicons of old profile and set mapicons of new ones
     "chosenProfileStore.getId": function () {
       for (const singleDatacenter of this.datacenter) {
         try {
@@ -93,8 +97,10 @@ export default {
       if (this.chosenProfileStore.getId != "0") {
         for (const singleDatacenter of this.datacenter) {
           try {
+            // if the user didn't log out after the profiles has been created or updated, the marker's references are still saved in leaflet
             singleDatacenter.marker.addTo(this.map);
           } catch {
+            // otherwise create new markers from the lat and lng
             var dataCenterIcon = L.icon({
               iconUrl: dataCenterPng,
               iconSize: [32, 32],
@@ -148,6 +154,7 @@ export default {
           : "#26a269";
       }
 
+      // style every region
       function style(feature) {
         return {
           fillColor: getColor(
@@ -192,7 +199,8 @@ export default {
           click: click,
         });
       }
-      var tmpthis = this;
+
+      var tmpthis = this; //save reference of current scope for vue methods in current function
       this.map = L.map("map").setView([54, -3], 6);
       var geojson;
 
@@ -209,6 +217,8 @@ export default {
     },
     createDataCenter(regionId, dataCenterConfig) {
       var regionId = parseInt(regionId);
+
+      // if datacenter already exists, give no option to create another one
       if (this.datacenter.some((obj) => obj.regionId === regionId)) {
         return;
       }
@@ -251,21 +261,31 @@ export default {
       this.$emit("update:datacenter", this.datacenter);
     },
     createProfile(profileName) {
+      // after new profile is created, switch to 'New Template' - so remove all current icons
       for (const singleDatacenter of this.datacenter) {
         this.map.removeLayer(singleDatacenter.marker);
       }
       var user = this.userStore.getUser;
+      var modifiedDataCenters = this.datacenter.map(function (dataCenter) {
+        // Create a copy of the object without the "marker" property (has circular reference)
+        return {
+          regionId: dataCenter.regionId,
+          lat: dataCenter.lat,
+          lng: dataCenter.lng,
+          computerNum: dataCenter.computerNum,
+        };
+      });
       var profile = {
         name: profileName,
         id: user.profiles.length,
-        datacenter: this.datacenter,
+        datacenter: modifiedDataCenters,
       };
       user.profiles.push(profile);
       this.userStore.setUser(user);
       axios.put(
         `${config.serverURL}:${config.port}/users/${this.userStore.getUser._id}/profiles`,
         {
-          profiles: this.userStore.getUser.profiles,
+          profiles: user.profiles,
         }
       );
       this.datacenter = [];
@@ -274,40 +294,30 @@ export default {
     updateProfile(profileName) {
       var currentProfileId = this.chosenProfileStore.getId;
       var user = this.userStore.getUser;
-      var newProfiles = [];
-      for (const profile of user.profiles) {
-        var newDatacenters = [];
-        for (const datacenter of profile.datacenter) {
-          newDatacenters.push({
-            regionId: datacenter.regionId,
-            computerNum: datacenter.computerNum,
-            lat: datacenter.lat,
-            lng: datacenter.lng,
-          });
-        }
-        if (profile.id === currentProfileId) {
-          newProfiles.push({
-            name: profileName,
-            id: profile.id,
-            datacenter: newDatacenters,
-          });
-        } else {
-          newProfiles.push({
-            name: profile.name,
-            id: profile.id,
-            datacenter: newDatacenters,
-          });
-        }
-      }
-      user.profiles = newProfiles;
-      this.userStore.setUser(user);
+      var currentProfile = user.profiles.find(
+        (obj) => obj.id === currentProfileId
+      );
+
+      var modifiedDataCenters = this.datacenter.map(function (dataCenter) {
+        // Create a copy of the object without the "marker" property (has circular reference)
+        return {
+          regionId: dataCenter.regionId,
+          lat: dataCenter.lat,
+          lng: dataCenter.lng,
+          computerNum: dataCenter.computerNum,
+        };
+      });
+      currentProfile.name = profileName;
+      currentProfile.datacenter = modifiedDataCenters;
+
+      //update chose profile store
       this.chosenProfileStore.setName(profileName);
       this.chosenProfileStore.setDataCenter(this.datacenter);
       this.chosenProfileStore.setId(currentProfileId);
       axios.put(
         `${config.serverURL}:${config.port}/users/${this.userStore.getUser._id}/profiles`,
         {
-          profiles: newProfiles,
+          profiles: user.profiles,
         }
       );
     },
@@ -316,6 +326,7 @@ export default {
       user.profiles = user.profiles.filter(
         (obj) => obj.id !== this.chosenProfileStore.getId
       );
+      // switch to new template after removal
       this.chosenProfileStore.setId(0);
       this.chosenProfileStore.setName("New Template");
       this.chosenProfileStore.setDataCenter([]);
@@ -323,11 +334,10 @@ export default {
         this.map.removeLayer(singleDatacenter.marker);
       }
       this.datacenter = [];
-      this.userStore.setUser(user);
       axios.put(
         `${config.serverURL}:${config.port}/users/${this.userStore.getUser._id}/profiles`,
         {
-          profiles: this.userStore.getUser.profiles,
+          profiles: user.profiles,
         }
       );
     },
@@ -359,7 +369,6 @@ export default {
       }
     },
     resizeMap() {
-      // Resize the map container to fit the window when the header size changes
       function resizeMapContainer() {
         var navbarHeight = $(".navbar").outerHeight();
         var mapOverlayOffset = navbarHeight + 15;
@@ -367,24 +376,32 @@ export default {
         $("#map-overlay").css("top", mapOverlayOffset + "px");
         resizeProfileOverlay();
       }
+      //resize the profile overlay to fit the window when the header size
       function resizeProfileOverlay() {
         var navbarHeight = $(".navbar").outerHeight();
         var mapOverlayHeight = parseInt($("#map-overlay").css("height"));
         var profileOverlayOffset = navbarHeight + mapOverlayHeight + 30;
         $("#profile-overlay").css("top", profileOverlayOffset + "px");
       }
+
+      // Resize the map container to fit the window when the header size changes
       new ResizeSensor($(".navbar"), function () {
         resizeMapContainer();
       });
+      // Resize the 'profile overlay' whenever the 'map overlay' size changes
       new ResizeSensor($("#map-overlay"), function () {
         resizeProfileOverlay();
       });
+
+      // resize everything accordingly, whenever the window gets resized
       window.addEventListener("resize", function () {
         resizeMapContainer();
       });
 
+      // initial resize
       resizeMapContainer();
     },
+    // get coordinates of middle of region for icon placement
     regionIdToCenterCoordinate(regionId) {
       const regionMap = {
         1: [56.8, -4.1],

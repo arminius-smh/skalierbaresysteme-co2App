@@ -87,6 +87,7 @@ import config from "../../config.mjs";
 
 export default {
     setup() {
+        // load global variables
         const store = useUserStore()
         return { store }
     },

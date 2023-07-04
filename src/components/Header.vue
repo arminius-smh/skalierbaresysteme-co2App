@@ -86,6 +86,7 @@ export default {
     SignInOverlay,
   },
   setup() {
+    // load global variables
     const userStore = useUserStore();
     const chosenProfileStore = useChosenProfileStore();
     return { userStore, chosenProfileStore };
@@ -98,6 +99,7 @@ export default {
     };
   },
   watch: {
+        // if the global profiles change, update the locally displayed profiles
     "userStore.getUser.profiles": function () {
       if (this.userStore.getUser != null) {
         this.profiles = this.userStore.getUser.profiles;
@@ -112,6 +114,7 @@ export default {
       return this.userStore.getUser != null;
     },
     setProfile(profile) {
+        // profile.id = 0 is the 'new Template' profile
       if (profile.id === 0) {
         profile.datacenter = [];
       }

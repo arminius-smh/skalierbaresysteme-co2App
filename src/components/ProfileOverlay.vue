@@ -53,6 +53,7 @@ import { useChosenProfileStore } from "../stores/chosenProfile.js";
 
 export default {
     setup() {
+        // load global variables
         const userStore = useUserStore();
         const chosenProfileStore = useChosenProfileStore();
         return { userStore, chosenProfileStore };
@@ -67,6 +68,7 @@ export default {
         };
     },
     watch: {
+        // whenever a user clicks on a different profile, update the name
         'chosenProfileStore.getId': function() {
             if (this.chosenProfileStore.getId === 0) {
                 this.profileName = "";
@@ -74,6 +76,7 @@ export default {
                 this.profileName = this.chosenProfileStore.getName;
             }
         },
+        // also update the displayed when, when a user only updates the name of a profile
         'chosenProfileStore.getName': function() {
             if (this.chosenProfileStore.getId === 0) {
                 this.profileName = "";
@@ -101,6 +104,7 @@ export default {
                 return;
             }
             this.$emit("createProfile", this.profileName);
+            // notify user of profile creation
             this.profileNameTemp = this.profileName;
             this.notifyCreate = true;
             setTimeout(() => {
@@ -124,6 +128,7 @@ export default {
                 return;
             }
             this.$emit("updateProfile", this.profileName);
+            // notify user of updated profile
             this.profileNameTemp = this.profileName;
             this.notifyUpdate = true;
             setTimeout(() => {
