@@ -72,14 +72,14 @@
             detailed power use data at different load levels. <br />
             <br />
             Which leads to the following formula: <br />
-            co2 Intensity * (maxPower * average load) * Time <br />
+            co2 Intensity * (maxPower * average load * 1h) * 24h <br />
             <br />
             Just the units: <br />
             (kgCO2 / kWh) * kWh * 24h <br />
             kgCO2 / 24h <br />
             <br />
             example calculation for one server: <br />
-            0.100 kgCO2 / kWh * (0.118kW * 0.5) * 24h = 0.142 kgCO2 / 24h
+            0.100 kgCO2 / kWh * (0.118kW * 0.5 * 1h) * 24h = 0.142 kgCO2 / 24h
           </div>
         </div>
       </div>
