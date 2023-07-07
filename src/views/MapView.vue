@@ -68,6 +68,9 @@ export default {
     // only load map after data is fetched
     this.getIntensityData()
       .then(() => {
+        if (this.userStore.getUser != null) {
+          this.chosenProfileStore.setProfile(this.userStore.getUser.profiles[0]); //reset to 'new template' if user switches to mapview
+        }
         this.initalizeMap();
         this.resizeMap(); //resize map dynamically
       })
