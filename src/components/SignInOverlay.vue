@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div id="SignInOverlay">
     <div class="overlay">
       <div class="overlay-content">
         <button
@@ -87,6 +87,7 @@ import config from "../../config.mjs";
 
 export default {
     setup() {
+        // load global variables
         const store = useUserStore()
         return { store }
     },
@@ -187,7 +188,7 @@ export default {
 
 .overlay-content-signin {
   top: 50px;
-  left: 75px;
+  left: 3vw;
 }
 
 .app-name {

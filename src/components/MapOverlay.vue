@@ -6,11 +6,11 @@
         <div v-else>
             <h4>Region: {{ regionClickName }}</h4>
             <p><u>Choose your configuration</u></p>
-            <p>Number of computers</p>
+            <p>Number of single socket servers</p>
             <input type="range" min="1" max="50" step="1" v-model="ComputerNum" @input="calculateCarbonIntensity" />
             <div class="slider-value">{{ ComputerNum }}</div>
             <p><u>Calculated Carbon Intensity</u></p>
-            <p>{{ calculatedCarbonIntensity }} kg CO2 / kWh</p>
+            <p>{{ calculatedCarbonIntensity }} kg CO2 / 24h</p>
             <div v-if="datacenter.some((obj) => obj.regionId === parseInt(regionClickId))
                 ">
                 <button id="update-button" @click="updateDataCenter" style="margin-right: 10px">
@@ -58,9 +58,11 @@ export default {
         };
     },
     watch: {
+        // whenever a new reigon is clicked, calculalate carbon intensity accordingly
         regionClickIntensity() {
             this.calculateCarbonIntensity();
         },
+        // whenever new region is clicked, check if a datacenter already exists and update number of computers in that region
         regionClickId() {
             if (
                 this.datacenter.some(
@@ -78,8 +80,8 @@ export default {
     methods: {
         calculateCarbonIntensity() {
             this.calculatedCarbonIntensity =
-                // TODO: Which numbers to use?
-                ((this.regionClickIntensity * this.ComputerNum * 3) / 1000).toFixed(2);
+                // See 'Info' page for calculation details
+                ((this.regionClickIntensity / 1000) * this.ComputerNum * 0.118 * 0.5 * 24).toFixed(2);
         },
         createDataCenter() {
             this.dataCenterConfig = {
@@ -92,6 +94,7 @@ export default {
                 computerNum: this.ComputerNum,
             };
             this.$emit("updateDataCenter", this.regionClickId, this.dataCenterConfig);
+            // notify user that datacenter has been updated
             this.SavedComputerNum = this.ComputerNum;
             this.notifyUpdate = true;
             setTimeout(() => {
