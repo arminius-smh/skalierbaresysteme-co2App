@@ -80,8 +80,8 @@ export default {
     methods: {
         calculateCarbonIntensity() {
             this.calculatedCarbonIntensity =
-                // See Impressum - 118W - 50% capacity - 24h = kwh in a day
-                ((this.regionClickIntensity * this.ComputerNum * 0.118 * 0.5 * 24) / 1000).toFixed(2);
+                // See 'Info' page for calculation details
+                ((this.regionClickIntensity / 1000) * this.ComputerNum * 0.118 * 0.5 * 24).toFixed(2);
         },
         createDataCenter() {
             this.dataCenterConfig = {

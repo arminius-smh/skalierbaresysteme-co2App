@@ -2,7 +2,8 @@ version: "3"
 
 services:
   co2app:
-    image: co2appuk/app:latest
+    #image: co2appuk/app:latest
+    build: .
     container_name: co2app
     restart: unless-stopped
     volumes:

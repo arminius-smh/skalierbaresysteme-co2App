@@ -1,35 +1,45 @@
 # skalierbare-systeme
+Our CO2 APP lets you create and compare different datacenter configurations in the UK regarding their CO2 emission.
 
-This template should help get you started developing with Vue 3 in Vite.
+Live-Demo: https://co2appuk.duckdns.org
 
-## Recommended IDE Setup
+## Installation
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+### requirements
 
-## Customize configuration
+- accessible MongoDB database
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+### config
 
-## Project Setup
+Edit the config.mjs file:
+- Choose whether to use HTTPS or not (requires keychain and private key).
+- Update the server URL (use 127.0.0.1 for local deployment).
+- Modify the MongoDB connection URL.
 
+### Docker
+If you prefer to use Docker:
+- **see example docker-compose.yml**
+- if you want to use HTTPS, bind your keychain and private key to the Docker container.
+
+```sh
+docker compose build
+docker compose up -d
+```
+
+### Docker-less
+If you do not want to use Docker:
+- https requires editing server/server.mjs to set your keychain and private key location
+
+production:
 ```sh
 npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Compile and Minify for Production
-
-```sh
 npm run build
+node server/server.js
 ```
-
-### Lint with [ESLint](https://eslint.org/)
-
+devolopement:
+- SERVER_URL in config.js has to be 'localhost'
 ```sh
-npm run lint
+npm install
+npm run dev
+node server/server.js
 ```
