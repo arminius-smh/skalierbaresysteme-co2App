@@ -13,9 +13,7 @@
         <ul class="region-list">
           <li v-for="datacenter in profile.datacenter" :key="datacenter.regionid" class="region-item">
             <p class="region-info">
-              <!-- die region.id wird nicht korrekt zurückgegeben bzw ist wahrscheinlich nicht richtig gespeichert -->
               {{ regionIdConverter(datacenter.regionId) }}: {{ datacenter.computerNum }} Computers
-              <!-- {{ datacenter.regionid }}: {{ datacenter.computerNum }} Computers -->
             </p>
           </li>
         </ul>
@@ -41,6 +39,23 @@ export default {
   },
   mounted() {
     this.initializeGraph();
+  },
+  data() {
+    this.graph = null;
+    return{
+      selectedProfiles: [], 
+      colors: [
+        'rgb(22,76,55)',
+        'rgb(125,145,180)',
+        'rgb(185,212,208)',
+        'rgb(212,231,213)',
+        'rgb(119,144,168)',
+        'rgb(39,56,68)',
+        'rgb(101,128,134)',
+        'rgb(98,122,132)',
+        'rgb(71,91,103)',
+      ],
+    };
   },
   methods: {
     regionIdConverter(input) {
@@ -79,30 +94,19 @@ export default {
       return totalComputers;
     },
     selectProfile(profile) {
-      const actual = this.calculateActualValue(profile);
-      const forecast1 = this.calculateForecastValue1(profile);
-      const forecast2 = this.calculateForecastValue2(profile);
-
-      this.updateGraph(actual, forecast1, forecast2);
+      const index = this.selectedProfiles.findIndex((selectedProfile) => parseInt(selectedProfile.id) === parseInt(profile.id));
+      if(index !== -1){ //delete profile from array
+        this.selectedProfiles.splice(index, 1);
+      } else { //add profile to array
+        console.log("profile:"+JSON.stringify(profile.id));
+        this.selectedProfiles.push(profile);
+      }
+      console.log("profile added to array");
+      this.updateGraph();
     },
     calculateActualValue(profile) {
       //dummy data
-      const Values = { 
-        1: 10,
-        2: 45,
-        3: 22,
-        4: 40,
-        5: 49,
-        6: 53,
-        7: 44,
-        8: 30,
-        9: 30,
-        10: 35,
-        11: 12,
-        12: 15,
-        13: 32,
-        14: 41,
-      };
+      const Values = { 1: 10, 2: 45, 3: 22, 4: 40, 5: 49, 6: 53, 7: 44, 8: 30, 9: 30, 10: 35, 11: 12, 12: 15, 13: 32, 14: 41, };
       let sum = 0;
       for (const datacenter of profile.datacenter) {
         const regionId = parseInt(datacenter.regionId);
@@ -112,22 +116,7 @@ export default {
     },
     calculateForecastValue1(profile) {
       //dummy data
-      const Values = { 
-        1: 20,
-        2: 35,
-        3: 22,
-        4: 20,
-        5: 19,
-        6: 43,
-        7: 34,
-        8: 10,
-        9: 50,
-        10: 25,
-        11: 22,
-        12: 45,
-        13: 22,
-        14: 21,
-      };
+      const Values = { 1: 20, 2: 35, 3: 22, 4: 20, 5: 19, 6: 43, 7: 34, 8: 10, 9: 50, 10: 25, 11: 22, 12: 45, 13: 22, 14: 21, };
       let sum = 0;
       for (const datacenter of profile.datacenter) {
         const regionId = parseInt(datacenter.regionId);
@@ -137,22 +126,7 @@ export default {
     },
     calculateForecastValue2(profile) {
       // dummy data
-      const Values = { 
-        1: 20,
-        2: 5,
-        3: 8,
-        4: 50,
-        5: 29,
-        6: 13,
-        7: 34,
-        8: 60,
-        9: 10,
-        10: 15,
-        11: 42,
-        12: 35,
-        13: 12,
-        14: 21,
-      };
+      const Values = { 1: 20, 2: 5, 3: 8, 4: 50, 5: 29, 6: 13, 7: 34, 8: 60, 9: 10, 10: 15, 11: 42, 12: 35, 13: 12, 14: 21, };
       let sum = 0;
       for (const datacenter of profile.datacenter) {
         const regionId = parseInt(datacenter.regionId);
@@ -180,18 +154,27 @@ export default {
           },
         },
       });
+      console.log("graph data"+JSON.stringify(this.graph.data.datasets));
     },
-    updateGraph(actual, forecast1, forecast2) {
-      this.graph.data.datasets = [
-        {
-          label: "kg CO2 / kWh", //label maybe not needed
-          data: [actual, forecast1, forecast2],
-          borderColor: "rgb(255, 99, 132)",
-          backgroundColor: "rgba(255, 99, 132, 0.5)",
-        },
-      ];
+    updateGraph() {
+      this.graph.data.datasets = [];
+      this.selectedProfiles.forEach((profile, index) => {
+        const actual = this.calculateActualValue(profile);
+        const forecast1 = this.calculateForecastValue1(profile);
+        const forecast2 = this.calculateForecastValue2(profile);
+
+        const dataset = 
+          {
+            label: profile.name, 
+            data: [actual, forecast1, forecast2],
+            borderColor: this.colors[index],
+            backgroundColor: this.colors[index], 
+          };
+        this.graph.data.datasets.push(dataset);
+        });
       this.graph.update();
     },
+
   },
 };
 </script>
