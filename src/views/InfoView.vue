@@ -71,15 +71,12 @@
             synthetic worklets to test discrete system components, providing
             detailed power use data at different load levels. <br />
             <br />
-            Which leads to the following formula: <br />
-            co2 Intensity * (maxPower * average load * 1h) * 24h <br />
+            Which leads to the following formula to calculate co2 emission per
+            day: <br />
+            co2 Intensity * (maxPowerPC * average load * time) <br />
             <br />
-            Just the units: <br />
-            (kgCO2 / kWh) * kWh * 24h <br />
-            kgCO2 / 24h <br />
-            <br />
-            example calculation for one server: <br />
-            0.100 kgCO2 / kWh * (0.118kW * 0.5 * 1h) * 24h = 0.142 kgCO2 / 24h
+            example calculation for one server per day: <br />
+            0.100 kgCO2 / kWh * (0.118kW * 0.5 * 24h) = 0.142 kgCO2
           </div>
         </div>
       </div>
