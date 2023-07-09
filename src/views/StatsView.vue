@@ -1,29 +1,31 @@
 <template>
   <div class="container">
     <div class="profiles-column">
-      <div
-        v-for="(profile) in userStore.getUser.profiles.slice(1)"
-        :key="profile.id"
-        class="profile-card"
-        @click="selectProfile(profile)"
-      >
-        <h3 class="profile-name">{{ profile.name }}</h3>
-        <div class="profile-info">
-          <p class="computers-label">
-            <strong>Computers:</strong> {{ getProfileTotalComputers(profile) }}
-          </p>
-          <ul class="region-list">
-            <li
-              v-for="datacenter in profile.datacenter"
-              :key="datacenter.regionid"
-              class="region-item"
-            >
-              <p class="region-info">
-                {{ regionIdConverter(datacenter.regionId) }}:
-                {{ datacenter.computerNum }} Computers
-              </p>
-            </li>
-          </ul>
+      <div class="profile-list">
+        <div
+          v-for="(profile) in userStore.getUser.profiles.slice(1)"
+          :key="profile.id"
+          class="profile-card"
+          @click="selectProfile(profile)"
+        >
+          <h3 class="profile-name">{{ profile.name }}</h3>
+          <div class="profile-info">
+            <p class="computers-label">
+              <strong>Computers:</strong> {{ getProfileTotalComputers(profile) }}
+            </p>
+            <ul class="region-list">
+              <li
+                v-for="datacenter in profile.datacenter"
+                :key="datacenter.regionid"
+                class="region-item"
+              >
+                <p class="region-info">
+                  {{ regionIdConverter(datacenter.regionId) }}:
+                  {{ datacenter.computerNum }} Computers
+                </p>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -64,10 +66,10 @@ export default {
         "rgb(125,145,180)",
         "rgb(185,212,208)",
         "rgb(212,231,213)",
-        "rgb(119,144,168)",
-        "rgb(39,56,68)",
-        "rgb(101,128,134)",
         "rgb(98,122,132)",
+        "rgb(39,56,68)",
+        "rgb(119,144,168)",
+        "rgb(101,128,134)",
         "rgb(71,91,103)",
       ],
       intensityNow: [],
@@ -147,14 +149,11 @@ export default {
         this.selectedProfiles.splice(index, 1);
       } else {
         //add profile to array
-        console.log("profile:" + JSON.stringify(profile.id));
         this.selectedProfiles.push(profile);
-      }
-      console.log("profile added to array");
+      };
       this.updateGraph();
     },
     calculateActualValue(profile) {
-      //dummy data
       const Values = this.intensityNow;
       let sum = 0;
       for (const datacenter of profile.datacenter) {
@@ -201,7 +200,6 @@ export default {
           },
         },
       });
-      console.log("graph data" + JSON.stringify(this.graph.data.datasets));
     },
     updateGraph() {
       this.graph.data.datasets = [];
@@ -225,6 +223,10 @@ export default {
 </script>
 
 <style scoped>
+ .profile-list {
+    height: 100%;
+  }
+
 .profile-name {
   font-size: 20px;
   font-weight: bold;
@@ -250,10 +252,11 @@ export default {
 
 .profiles-column {
   width: 25%;
-  height: 100%;
+  height: 92vh;
   background-color: #f0f0f0;
   padding: 20px;
   border-left: none;
+  overflow-y: scroll;
 }
 
 .profile-card {
@@ -278,12 +281,9 @@ ul {
 }
 
 .graph-container {
-  /* TODO layout verbessern */
-  width: 100%;
-  /* padding: 10%; */
-  /* height: 100%; */
+  width: 75%;
+  padding-left: 10%;
   display: flex;
-  /* justify-content: center; */
   align-items: center;
 }
 
@@ -293,4 +293,22 @@ ul {
   margin-right: 0px;
   padding: 0px;
 }
+
+  /* Scrollbar */
+  .profile-list::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  .profile-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .profile-list::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  
+  .profile-list::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 </style>
