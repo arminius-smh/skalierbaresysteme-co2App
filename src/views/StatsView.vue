@@ -3,7 +3,7 @@
     <div class="profiles-column">
       <div class="profile-list">
         <div
-          v-for="(profile) in userStore.getUser.profiles.slice(1)"
+          v-for="profile in userStore.getUser.profiles.slice(1)"
           :key="profile.id"
           class="profile-card"
           @click="selectProfile(profile)"
@@ -11,7 +11,8 @@
           <h3 class="profile-name">{{ profile.name }}</h3>
           <div class="profile-info">
             <p class="computers-label">
-              <strong>Computers:</strong> {{ getProfileTotalComputers(profile) }}
+              <strong>Computers:</strong>
+              {{ getProfileTotalComputers(profile) }}
             </p>
             <ul class="region-list">
               <li
@@ -48,7 +49,6 @@ export default {
     return { userStore };
   },
   mounted() {
-    console.log(this.userStore.getUser.profiles);
     this.getIntensityData()
       .then(() => {
         this.initializeGraph();
@@ -56,6 +56,14 @@ export default {
       .catch((error) => {
         console.log(error);
       });
+  },
+  watch: {
+    "userStore.getUser": function () {
+      // if user logs out, route user to map page
+      if (this.userStore.getUser === null) {
+        this.$router.push("/");
+      }
+    },
   },
   data() {
     this.graph = null;
@@ -150,7 +158,7 @@ export default {
       } else {
         //add profile to array
         this.selectedProfiles.push(profile);
-      };
+      }
       this.updateGraph();
     },
     calculateActualValue(profile) {
@@ -158,7 +166,12 @@ export default {
       let sum = 0;
       for (const datacenter of profile.datacenter) {
         const regionId = parseInt(datacenter.regionId);
-        sum += parseInt(datacenter.computerNum * Values[regionId - 1]);
+        sum +=
+          (Values[regionId - 1] / 1000) *
+          datacenter.computerNum *
+          0.118 *
+          0.5 *
+          24;
       }
       return sum;
     },
@@ -167,7 +180,12 @@ export default {
       let sum = 0;
       for (const datacenter of profile.datacenter) {
         const regionId = parseInt(datacenter.regionId);
-        sum += parseInt(datacenter.computerNum * Values[regionId]);
+        sum +=
+          (Values[regionId - 1] / 1000) *
+          datacenter.computerNum *
+          0.118 *
+          0.5 *
+          24;
       }
       return sum;
     },
@@ -176,7 +194,12 @@ export default {
       let sum = 0;
       for (const datacenter of profile.datacenter) {
         const regionId = parseInt(datacenter.regionId);
-        sum += parseInt(datacenter.computerNum * Values[regionId]);
+        sum +=
+          (Values[regionId - 1] / 1000) *
+          datacenter.computerNum *
+          0.118 *
+          0.5 *
+          24;
       }
       return sum;
     },
@@ -194,7 +217,7 @@ export default {
               beginAtZero: true,
               title: {
                 display: true,
-                text: "kg CO2 / kWh",
+                text: "kg CO2",
               },
             },
           },
@@ -223,9 +246,9 @@ export default {
 </script>
 
 <style scoped>
- .profile-list {
-    height: 100%;
-  }
+.profile-list {
+  height: 100%;
+}
 
 .profile-name {
   font-size: 20px;
@@ -294,21 +317,21 @@ ul {
   padding: 0px;
 }
 
-  /* Scrollbar */
-  .profile-list::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  .profile-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
-  }
-  
-  .profile-list::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-  }
-  
-  .profile-list::-webkit-scrollbar-thumb:hover {
-    background: #555;
-  }
+/* Scrollbar */
+.profile-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.profile-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.profile-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.profile-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
 </style>
