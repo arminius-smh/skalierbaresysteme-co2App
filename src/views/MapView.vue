@@ -126,11 +126,7 @@ export default {
         axios
           .get(`${config.serverURL}:${config.port}/co2data`)
           .then((response) => {
-            this.intensity = response.data.flatMap((obj) =>
-              obj.data.flatMap((region) =>
-                region.data.flatMap((entry) => entry.intensity.forecast)
-              )
-            );
+            this.intensity = response.data.map((region) => region.intensity.forecast);
             resolve();
           })
           .catch((error) => {

@@ -2,22 +2,29 @@
   <div class="container">
     <div class="profiles-column">
       <div
-        v-for="profile in userStore.getUser.profiles"
+        v-for="(profile) in userStore.getUser.profiles.slice(1)"
         :key="profile.id"
         class="profile-card"
         @click="selectProfile(profile)"
       >
-      <h3 class="profile-name">{{ profile.name }}</h3>
-      <div class="profile-info">
-        <p class="computers-label"><strong>Computers:</strong> {{ getProfileTotalComputers(profile) }}</p>
-        <ul class="region-list">
-          <li v-for="datacenter in profile.datacenter" :key="datacenter.regionid" class="region-item">
-            <p class="region-info">
-              {{ regionIdConverter(datacenter.regionId) }}: {{ datacenter.computerNum }} Computers
-            </p>
-          </li>
-        </ul>
-      </div>
+        <h3 class="profile-name">{{ profile.name }}</h3>
+        <div class="profile-info">
+          <p class="computers-label">
+            <strong>Computers:</strong> {{ getProfileTotalComputers(profile) }}
+          </p>
+          <ul class="region-list">
+            <li
+              v-for="datacenter in profile.datacenter"
+              :key="datacenter.regionid"
+              class="region-item"
+            >
+              <p class="region-info">
+                {{ regionIdConverter(datacenter.regionId) }}:
+                {{ datacenter.computerNum }} Computers
+              </p>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
     <div class="graph-container">
@@ -26,10 +33,11 @@
   </div>
 </template>
 
-
 <script>
 import { useUserStore } from "../stores/userStore.js";
 import Chart from "chart.js/auto";
+import axios from "axios";
+import config from "../../config.mjs";
 
 export default {
   name: "StatsView",
@@ -38,26 +46,63 @@ export default {
     return { userStore };
   },
   mounted() {
-    this.initializeGraph();
+    console.log(this.userStore.getUser.profiles);
+    this.getIntensityData()
+      .then(() => {
+        this.initializeGraph();
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   },
   data() {
     this.graph = null;
-    return{
-      selectedProfiles: [], 
+    return {
+      selectedProfiles: [],
       colors: [
-        'rgb(22,76,55)',
-        'rgb(125,145,180)',
-        'rgb(185,212,208)',
-        'rgb(212,231,213)',
-        'rgb(119,144,168)',
-        'rgb(39,56,68)',
-        'rgb(101,128,134)',
-        'rgb(98,122,132)',
-        'rgb(71,91,103)',
+        "rgb(22,76,55)",
+        "rgb(125,145,180)",
+        "rgb(185,212,208)",
+        "rgb(212,231,213)",
+        "rgb(119,144,168)",
+        "rgb(39,56,68)",
+        "rgb(101,128,134)",
+        "rgb(98,122,132)",
+        "rgb(71,91,103)",
       ],
+      intensityNow: [],
+      intensity24h: [],
+      intensity48h: [],
     };
   },
   methods: {
+    async getIntensityData() {
+      return new Promise((resolve, reject) => {
+        const requests = [
+          axios.get(`${config.serverURL}:${config.port}/co2data`),
+          axios.get(`${config.serverURL}:${config.port}/co2data/fw24h`),
+          axios.get(`${config.serverURL}:${config.port}/co2data/fw48h`),
+        ];
+
+        Promise.all(requests)
+          .then(([responseNow, response24, response48]) => {
+            this.intensityNow = responseNow.data.map(
+              (region) => region.intensity.forecast
+            );
+            this.intensity24h = response24.data.map(
+              (region) => region.intensity.forecast
+            );
+            this.intensity48h = response48.data.map(
+              (region) => region.intensity.forecast
+            );
+            resolve();
+          })
+          .catch((error) => {
+            console.error("Error fetching co2data:", error);
+            reject(error);
+          });
+      });
+    },
     regionIdConverter(input) {
       const regionMap = {
         1: "North Scotland",
@@ -75,7 +120,6 @@ export default {
         13: "London",
         14: "South East England",
       };
-      // return regionMap[parseInt(input)] || "Region unknown";
       if (!isNaN(parseInt(input))) {
         return regionMap[parseInt(input)] || "Something went wrong1!";
       } else {
@@ -84,7 +128,7 @@ export default {
           invertedMap[value] = parseInt(key);
         }
         return invertedMap[input] || "Something went wrong2!";
-     }
+      }
     },
     getProfileTotalComputers(profile) {
       let totalComputers = 0;
@@ -94,11 +138,16 @@ export default {
       return totalComputers;
     },
     selectProfile(profile) {
-      const index = this.selectedProfiles.findIndex((selectedProfile) => parseInt(selectedProfile.id) === parseInt(profile.id));
-      if(index !== -1){ //delete profile from array
+      const index = this.selectedProfiles.findIndex(
+        (selectedProfile) =>
+          parseInt(selectedProfile.id) === parseInt(profile.id)
+      );
+      if (index !== -1) {
+        //delete profile from array
         this.selectedProfiles.splice(index, 1);
-      } else { //add profile to array
-        console.log("profile:"+JSON.stringify(profile.id));
+      } else {
+        //add profile to array
+        console.log("profile:" + JSON.stringify(profile.id));
         this.selectedProfiles.push(profile);
       }
       console.log("profile added to array");
@@ -106,17 +155,16 @@ export default {
     },
     calculateActualValue(profile) {
       //dummy data
-      const Values = { 1: 10, 2: 45, 3: 22, 4: 40, 5: 49, 6: 53, 7: 44, 8: 30, 9: 30, 10: 35, 11: 12, 12: 15, 13: 32, 14: 41, };
+      const Values = this.intensityNow;
       let sum = 0;
       for (const datacenter of profile.datacenter) {
         const regionId = parseInt(datacenter.regionId);
-        sum += parseInt(datacenter.computerNum * Values[regionId]);
+        sum += parseInt(datacenter.computerNum * Values[regionId - 1]);
       }
       return sum;
     },
     calculateForecastValue1(profile) {
-      //dummy data
-      const Values = { 1: 20, 2: 35, 3: 22, 4: 20, 5: 19, 6: 43, 7: 34, 8: 10, 9: 50, 10: 25, 11: 22, 12: 45, 13: 22, 14: 21, };
+      const Values = this.intensity24h;
       let sum = 0;
       for (const datacenter of profile.datacenter) {
         const regionId = parseInt(datacenter.regionId);
@@ -125,8 +173,7 @@ export default {
       return sum;
     },
     calculateForecastValue2(profile) {
-      // dummy data
-      const Values = { 1: 20, 2: 5, 3: 8, 4: 50, 5: 29, 6: 13, 7: 34, 8: 60, 9: 10, 10: 15, 11: 42, 12: 35, 13: 12, 14: 21, };
+      const Values = this.intensity48h;
       let sum = 0;
       for (const datacenter of profile.datacenter) {
         const regionId = parseInt(datacenter.regionId);
@@ -148,13 +195,13 @@ export default {
               beginAtZero: true,
               title: {
                 display: true,
-                text: 'kg CO2 / kWh',
+                text: "kg CO2 / kWh",
               },
             },
           },
         },
       });
-      console.log("graph data"+JSON.stringify(this.graph.data.datasets));
+      console.log("graph data" + JSON.stringify(this.graph.data.datasets));
     },
     updateGraph() {
       this.graph.data.datasets = [];
@@ -163,18 +210,16 @@ export default {
         const forecast1 = this.calculateForecastValue1(profile);
         const forecast2 = this.calculateForecastValue2(profile);
 
-        const dataset = 
-          {
-            label: profile.name, 
-            data: [actual, forecast1, forecast2],
-            borderColor: this.colors[index],
-            backgroundColor: this.colors[index], 
-          };
+        const dataset = {
+          label: profile.name,
+          data: [actual, forecast1, forecast2],
+          borderColor: this.colors[index],
+          backgroundColor: this.colors[index],
+        };
         this.graph.data.datasets.push(dataset);
-        });
+      });
       this.graph.update();
     },
-
   },
 };
 </script>
@@ -205,7 +250,7 @@ export default {
 
 .profiles-column {
   width: 25%;
-  height: 100%; 
+  height: 100%;
   background-color: #f0f0f0;
   padding: 20px;
   border-left: none;
@@ -241,6 +286,7 @@ ul {
   /* justify-content: center; */
   align-items: center;
 }
+
 .container {
   display: flex;
   margin-left: 0px;

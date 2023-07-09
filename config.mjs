@@ -1,6 +1,6 @@
 // set variables to your preferences
-const useHttps = true;
-var serverURL = "co2appuk.duckdns.org"
+const useHttps = false;
+var serverURL = "localhost"
 
 var port;
 if (useHttps) {
