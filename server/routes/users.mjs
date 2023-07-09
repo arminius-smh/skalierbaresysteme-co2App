@@ -5,13 +5,6 @@ import { ObjectId } from "mongodb";;
 
 const router = express.Router();
 
-router.get("/", async (req, res) => {
-  let collection = db.collection("users");
-  let results = await collection.find({}).toArray();
-
-  res.send(results).status(200);
-});
-
 router.post("/register", async (req, res) => {
   try {
     let collection = db.collection("users");

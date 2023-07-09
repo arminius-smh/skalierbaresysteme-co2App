@@ -1,6 +1,6 @@
 // set variables to your preferences
 const useHttps = true;
-var serverURL = "co2appuk.duckdns.org"
+var serverURL = "co2appuk.duckdns.org";
 
 var port;
 if (useHttps) {
