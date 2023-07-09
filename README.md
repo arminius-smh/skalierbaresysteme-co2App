@@ -34,12 +34,12 @@ production:
 ```sh
 npm install
 npm run build
-node server/server.js
+node server/server.mjs
 ```
 devolopement:
 - SERVER_URL in config.js has to be 'localhost'
 ```sh
 npm install
 npm run dev
-node server/server.js
+node server/server.mjs
 ```
