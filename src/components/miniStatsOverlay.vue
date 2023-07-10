@@ -86,6 +86,11 @@
     left: 20px;
     transform: translate(0, -50%);
     z-index: 9999;
+    padding: 6px 8px;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
   }
   
   .chart {

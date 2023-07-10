@@ -1,29 +1,25 @@
 <template>
   <div class="container-fluid">
-  <MapOverlay
-    :regionClickIntensity="regionClickIntensity"
-    :regionClickName="regionClickName"
-    :regionClickId="regionClickId"
-    :datacenter="datacenter"
-    @createDataCenter="createDataCenter"
-    @updateDataCenter="updateDataCenter"
-    @removeDataCenter="removeDataCenter"
-  />
+    <MapOverlay
+      :regionClickIntensity="regionClickIntensity"
+      :regionClickName="regionClickName"
+      :regionClickId="regionClickId"
+      :datacenter="datacenter"
+      @createDataCenter="createDataCenter"
+      @updateDataCenter="updateDataCenter"
+      @removeDataCenter="removeDataCenter"
+    />
 
-    <ProfileOverlay v-if="userStore.getUser != null"
+    <ProfileOverlay
+      v-if="userStore.getUser != null"
       @createProfile="createProfile"
       @updateProfile="updateProfile"
       @removeProfile="removeProfile"
     />
 
-    <miniStatsOverlay
-    :datacenters="datacenter"
-    :intensity="intensity" 
-    />
-
+    <miniStatsOverlay :datacenters="datacenter" :intensity="intensity" />
   </div>
   <div id="map"></div>
-
 </template>
 
 <script>
@@ -69,7 +65,9 @@ export default {
     this.getIntensityData()
       .then(() => {
         if (this.userStore.getUser != null) {
-          this.chosenProfileStore.setProfile(this.userStore.getUser.profiles[0]); //reset to 'new template' if user switches to mapview
+          this.chosenProfileStore.setProfile(
+            this.userStore.getUser.profiles[0]
+          ); //reset to 'new template' if user switches to mapview
         }
         this.initalizeMap();
         this.resizeMap(); //resize map dynamically
@@ -126,7 +124,9 @@ export default {
         axios
           .get(`${config.serverURL}:${config.port}/co2data`)
           .then((response) => {
-            this.intensity = response.data.map((region) => region.intensity.forecast);
+            this.intensity = response.data.map(
+              (region) => region.intensity.forecast
+            );
             resolve();
           })
           .catch((error) => {
@@ -198,9 +198,29 @@ export default {
           click: click,
         });
       }
+      var legend = L.control({ position: "bottomleft" });
+
+      legend.onAdd = function (map) {
+        var div = L.DomUtil.create("div", "info legend"),
+          grades = [0, 5, 20, 50, 100, 200, 350, 500];
+
+        // loop through our density intervals and generate a label with a colored square for each interval
+        div.innerHTML += "<div>g CO2/kWh</div><br>"
+        for (var i = 0; i < grades.length; i++) {
+          div.innerHTML +=
+            '<i style="background:' +
+            getColor(grades[i] + 1) +
+            '"></i> ' +
+            grades[i] +
+            (grades[i + 1] ? "&ndash;" + grades[i + 1] + "<br>" : "+");
+        }
+
+        return div;
+      };
 
       var tmpthis = this; //save reference of current scope for vue methods in current function
       this.map = L.map("map").setView([54, -3], 6);
+      legend.addTo(this.map);
       var geojson;
 
       L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -236,7 +256,6 @@ export default {
         lat: lat,
         lng: lng,
         computerNum: dataCenterConfig.computerNum,
-
       };
       this.datacenter.push(singleDataCenter);
       this.$emit("update:datacenter", this.datacenter);
@@ -423,3 +442,30 @@ export default {
   },
 };
 </script>
+
+
+<style>
+.legend {
+    line-height: 18px;
+    color: #555;
+}
+.legend i {
+    width: 50px;
+    height: 16px;
+    float: left;
+    margin-right: 8px;
+    opacity: 0.7;
+}
+.info {
+    padding: 6px 8px;
+    font: 14px/16px Arial, Helvetica, sans-serif;
+    background: white;
+    background: rgba(255,255,255,0.8);
+    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+    border-radius: 5px;
+}
+.info h4 {
+    margin: 0 0 5px;
+    color: #777;
+}
+</style>
