@@ -6,7 +6,7 @@
           class="close-button"
           @click="this.$emit('closeSignIn')"
         ></button>
-        <h2 class="app-name">ClimaDat</h2>
+        <h2 class="app-name">CO2 App UK</h2>
         <form @submit.prevent="signIn" class="login-form">
           <div class="form-group">
             <label for="Username">Username:</label>
@@ -44,7 +44,7 @@
           class="close-button"
           @click="this.showRegisterOverlay = false"
         ></button>
-        <h2 class="app-name">ClimaDat</h2>
+        <h2 class="app-name">CO2 App UK</h2>
         <form @submit.prevent="register" class="register-form">
           <div class="form-group">
             <label for="username">Username:</label>
