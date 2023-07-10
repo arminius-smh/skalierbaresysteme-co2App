@@ -1,6 +1,6 @@
 <template>
-    <div class="mini-stats-overlay">
-        <div v-if="datacenters.length>0" class="h2"> Datacenters </div>
+    <div class="mini-stats-overlay" v-if="datacenters.length>0">
+        <div class="h2"> Datacenters </div>
       <div class="chart">
         <div v-for="datacenter in datacenters.sort((a,b )=> intensity[a.regionId-1]- intensity[b.regionId-1])"
           :key="datacenter.regionId">
@@ -85,7 +85,7 @@
     top: 45%;
     left: 20px;
     transform: translate(0, -50%);
-    z-index: 9999;
+    z-index: 1000;
     padding: 6px 8px;
     background: white;
     background: rgba(255,255,255,0.8);
